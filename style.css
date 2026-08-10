@@ -186,6 +186,78 @@ p.lead strong{color:var(--text)}
 }
 .stat-line span{color:var(--accent);font-weight:600}
 
+.section-label{
+  font:600 11px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.section-label::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+
+.rank-panel{
+  margin-top:6px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+.rank-list{
+  list-style:none;
+  margin:0 0 12px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.rank-list li{
+  background:var(--bg-soft);
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  padding:9px 12px;
+  font:400 12.5px/1.5 'JetBrains Mono',monospace;
+}
+.rank-list li.rank-empty{
+  color:var(--text-dim);
+  justify-content:center;
+  font-family:'Noto Sans JP',sans-serif;
+  padding:16px 12px;
+}
+.rank-list li.rank-new{
+  outline:1px solid var(--accent);
+  background:rgba(127,224,196,.08);
+}
+.rank-list .rank-no{
+  color:var(--accent);
+  font-weight:700;
+  width:1.6em;
+  flex:0 0 auto;
+}
+.rank-list .rank-time{
+  color:var(--text);
+  font-weight:600;
+  flex:1;
+}
+.rank-list .rank-meta{
+  color:var(--text-dim);
+  font-size:11px;
+  flex:0 0 auto;
+}
+.rank-clear{
+  font-size:11px;
+  padding:7px 12px;
+}
+
 footer{
   position:relative;
   max-width:1080px;

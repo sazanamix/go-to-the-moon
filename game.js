@@ -261,6 +261,9 @@
   const retryBtn = document.getElementById('retryBtn');
   const attemptCountEl = document.getElementById('attemptCount');
   const successCountEl = document.getElementById('successCount');
+  const giveUpBtn = document.getElementById('giveUpBtn');
+  const rankList = document.getElementById('rankList');
+  const rankClearBtn = document.getElementById('rankClearBtn');
 
   function fmtKm(m) { return (m / 1000).toLocaleString('ja-JP', { maximumFractionDigits: 0 }) + ' km'; }
   function fmtTime(tSim) {
@@ -297,6 +300,62 @@
     banner.classList.add('hidden');
   }
 
+  // ---------- ランキング(この端末のlocalStorageのみに保存) ----------
+  const RANK_KEY = 'gttm_ranking_v1';
+  const RANK_MAX = 10;
+
+  function loadRanking() {
+    try {
+      const raw = localStorage.getItem(RANK_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveRanking(list) {
+    try { localStorage.setItem(RANK_KEY, JSON.stringify(list)); } catch (e) { /* 保存できなくても続行 */ }
+  }
+  function fmtFlightTime(sec) {
+    const days = Math.floor(sec / 86400);
+    const hours = Math.floor((sec % 86400) / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    if (days > 0) return `${days}日${hours}時間`;
+    if (hours > 0) return `${hours}時間${mins}分`;
+    return `${mins}分`;
+  }
+  function renderRanking(highlightIndex) {
+    const list = loadRanking();
+    rankList.innerHTML = '';
+    if (list.length === 0) {
+      rankList.innerHTML = '<li class="rank-empty">まだ月に到達した記録がありません</li>';
+      return;
+    }
+    list.forEach((entry, i) => {
+      const li = document.createElement('li');
+      if (i === highlightIndex) li.classList.add('rank-new');
+      const date = new Date(entry.date);
+      const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      li.innerHTML = `<span class="rank-no">${i + 1}</span><span class="rank-time">到達まで ${fmtFlightTime(entry.flightSec)}</span><span class="rank-meta">最接近 ${Math.round(entry.closestKm).toLocaleString('ja-JP')}km ・ ${dateStr}</span>`;
+      rankList.appendChild(li);
+    });
+  }
+  // 到達に成功した際の記録を登録し、TOP10入りしていればその順位(0始まり)を返す(なければ-1)
+  function submitRanking(flightSec, closestKm) {
+    const id = Date.now() + Math.random();
+    const list = loadRanking();
+    list.push({ id, flightSec, closestKm, date: Date.now() });
+    list.sort((a, b) => a.flightSec - b.flightSec);
+    const trimmed = list.slice(0, RANK_MAX);
+    saveRanking(trimmed);
+    return trimmed.findIndex((e) => e.id === id);
+  }
+  rankClearBtn.addEventListener('click', () => {
+    if (!confirm('この端末に保存されたランキング記録を消去しますか？')) return;
+    saveRanking([]);
+    renderRanking(-1);
+  });
+
   // ---------- 発射 ----------
   function launch() {
     if (state.launched) return;
@@ -320,15 +379,25 @@
     state.finished = false;
     state.trail = [{ x: pos.x, y: pos.y }];
     launchBtn.disabled = true;
+    giveUpBtn.classList.remove('hidden');
     hideBanner();
   }
 
   function finish(msg, isFail) {
     state.finished = true;
     launchBtn.disabled = true;
+    giveUpBtn.classList.add('hidden');
     retryBtn.classList.remove('hidden');
-    if (!isFail) state.successes++;
-    successCountEl.textContent = state.successes;
+    if (!isFail) {
+      state.successes++;
+      successCountEl.textContent = state.successes;
+      const flightSec = state.tSim - state.rocket.t0;
+      const rankIdx = submitRanking(flightSec, state.rocket.closest / 1000);
+      renderRanking(rankIdx);
+      if (rankIdx >= 0) {
+        msg += ` (ランキング${rankIdx + 1}位にランクイン！)`;
+      }
+    }
     showBanner(msg, isFail);
   }
 
@@ -338,12 +407,14 @@
     state.rocket = null;
     state.trail = [];
     launchBtn.disabled = false;
+    giveUpBtn.classList.add('hidden');
     retryBtn.classList.add('hidden');
     hideBanner();
   }
 
   launchBtn.addEventListener('click', launch);
   retryBtn.addEventListener('click', reset);
+  giveUpBtn.addEventListener('click', reset);
 
   // ---------- メインループ ----------
   let lastT = null;
@@ -407,5 +478,6 @@
 
   // ---------- 起動 ----------
   resize();
+  renderRanking(-1);
   requestAnimationFrame(frame);
 })();

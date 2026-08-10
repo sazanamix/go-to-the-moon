@@ -39,8 +39,15 @@
       <strong>角度(＝タイミング)だけ</strong>で月を狙ってください。
     </p>
     <button id="launchBtn" class="launch-btn">🚀 発射</button>
+    <button id="giveUpBtn" class="retry-btn hidden">✕ あきらめてリトライ</button>
     <button id="retryBtn" class="retry-btn hidden">もう一度</button>
     <div class="stat-line">試行 <span id="attemptCount">0</span> 回 / 到達 <span id="successCount">0</span> 回</div>
+
+    <div class="rank-panel">
+      <div class="section-label">ランキング(この端末内・到達までの速さ順)</div>
+      <ol id="rankList" class="rank-list"><li class="rank-empty">まだ月に到達した記録がありません</li></ol>
+      <button id="rankClearBtn" class="ghost-btn rank-clear">記録を消去</button>
+    </div>
   </div>
 </main>
 
@@ -61,6 +68,7 @@
       <li><b>重力</b>: 発射後のロケットには地球・月それぞれの重力(実際の重力パラメータGM)が働き、RK4法で数値積分しています。月に近づけば月の重力に引かれる「重力捕獲」も再現されます。</li>
       <li><b>簡略化した点</b>: 月の軌道傾斜(黄道に対して約5.1°)や地球の地軸傾斜、太陽・他惑星の重力は無視し、平面(2D)の地球-月系のみを扱っています。「月に到達」の判定は月の物理的な表面ではなく、月の重力圏に十分入った半径(約1万km)としています。</li>
       <li><b>時間の進み方</b>: そのままでは月まで数日かかるため、シミュレーション内時間を約9000倍速で進めています(比率はすべての天体・軌道で共通なので、周期の比率自体は実際の値を保っています)。</li>
+      <li><b>ランキング</b>: このブラウザ(端末)内のlocalStorageにのみ保存される、到達までの飛行時間が短い順のTOP10です。サーバーは持っていないため、他の人やほかの端末とは共有されません。</li>
     </ul>
   </div>
 </div>

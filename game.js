@@ -278,17 +278,26 @@
       hudDist.textContent = '–';
       hudSpeed.textContent = '–';
       hudClosest.textContent = '–';
+      hudTime.textContent = fmtTime(state.tSim);
+    } else if (state.finished) {
+      // 飛行終了後は結果を固定表示する(月・地球はその後も動き続けるが、飛行結果には無関係)
+      const f = state.finalStats;
+      hudStatus.textContent = '飛行終了';
+      hudDist.textContent = fmtKm(f.dist);
+      hudSpeed.textContent = (f.speed / 1000).toFixed(2) + ' km/s';
+      hudClosest.textContent = fmtKm(f.closest);
+      hudTime.textContent = fmtTime(f.elapsed);
     } else {
       const moon = moonPosition(state.tSim);
       const r = state.rocket;
       const dist = Math.hypot(r.x - moon.x, r.y - moon.y);
       const speed = Math.hypot(r.vx, r.vy);
-      hudStatus.textContent = state.finished ? '飛行終了' : '飛行中';
+      hudStatus.textContent = '飛行中';
       hudDist.textContent = fmtKm(dist);
       hudSpeed.textContent = (speed / 1000).toFixed(2) + ' km/s';
       hudClosest.textContent = fmtKm(r.closest);
+      hudTime.textContent = fmtTime(state.tSim - r.t0);
     }
-    hudTime.textContent = fmtTime(state.launched ? state.tSim - state.rocket.t0 : state.tSim);
   }
 
   function showBanner(text, isFail) {
@@ -383,16 +392,26 @@
     hideBanner();
   }
 
-  function finish(msg, isFail) {
+  function finish(msg, isFail, tAtFinish, distMoonAtFinish) {
     state.finished = true;
     launchBtn.disabled = true;
     giveUpBtn.classList.add('hidden');
     retryBtn.classList.remove('hidden');
+
+    // 飛行終了の瞬間の値でHUDを固定する(その後も月・地球は動き続けるが飛行結果には無関係)
+    const r = state.rocket;
+    const flightSec = tAtFinish - r.t0;
+    state.finalStats = {
+      elapsed: flightSec,
+      dist: distMoonAtFinish,
+      speed: Math.hypot(r.vx, r.vy),
+      closest: r.closest,
+    };
+
     if (!isFail) {
       state.successes++;
       successCountEl.textContent = state.successes;
-      const flightSec = state.tSim - state.rocket.t0;
-      const rankIdx = submitRanking(flightSec, state.rocket.closest / 1000);
+      const rankIdx = submitRanking(flightSec, r.closest / 1000);
       renderRanking(rankIdx);
       if (rankIdx >= 0) {
         msg += ` (ランキング${rankIdx + 1}位にランクイン！)`;
@@ -439,25 +458,26 @@
         state.rocket.vx = next.vx; state.rocket.vy = next.vy;
         remaining -= step;
 
-        const moon = moonPosition(tBefore + step);
+        const tNow = tBefore + step;
+        const moon = moonPosition(tNow);
         const distMoon = Math.hypot(state.rocket.x - moon.x, state.rocket.y - moon.y);
         const distEarth = Math.hypot(state.rocket.x, state.rocket.y);
         if (distMoon < state.rocket.closest) state.rocket.closest = distMoon;
 
         if (distMoon < CAPTURE_RADIUS) {
-          finish('🌕 月へ到達しました！ 重力に捕獲されました。', false);
+          finish('🌕 月へ到達しました！ 重力に捕獲されました。', false, tNow, distMoon);
           break;
         }
         if (distEarth < R_EARTH) {
-          finish('💥 地球に落下しました。', true);
+          finish('💥 地球に落下しました。', true, tNow, distMoon);
           break;
         }
         if (distEarth > OUT_OF_BOUNDS) {
-          finish('🛰️ ロケットは彼方へ飛び去り、行方不明になりました。', true);
+          finish('🛰️ ロケットは彼方へ飛び去り、行方不明になりました。', true, tNow, distMoon);
           break;
         }
-        if (state.tSim - state.rocket.t0 > MAX_FLIGHT_TIME) {
-          finish('⏱️ 燃料切れ想定 ― 月に届きませんでした。', true);
+        if (tNow - state.rocket.t0 > MAX_FLIGHT_TIME) {
+          finish('⏱️ 燃料切れ想定 ― 月に届きませんでした。', true, tNow, distMoon);
           break;
         }
       }

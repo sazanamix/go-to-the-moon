@@ -204,12 +204,13 @@
     ctx.fillStyle = eg;
     ctx.fill();
 
-    // 地球の自転を示すマーカー(自転と共に回転する目印)
+    // 地球の自転を示すマーカー(自転と共に回転する目印・大陸のような明るい点)
+    // 縁(発射地点)から離した位置に、背景に沈んで見えない暗色ではなく明るい色で描く
     const earthAngle = earthRotationAngle(state.tSim);
-    const markerR = earthR * 0.9;
+    const markerR = earthR * 0.55;
     ctx.beginPath();
-    ctx.arc(earthPx.x + Math.cos(earthAngle) * markerR, earthPx.y + Math.sin(earthAngle) * markerR, Math.max(earthR * 0.16, 1.4), 0, Math.PI * 2);
-    ctx.fillStyle = '#0b2b38';
+    ctx.arc(earthPx.x + Math.cos(earthAngle) * markerR, earthPx.y + Math.sin(earthAngle) * markerR, Math.max(earthR * 0.22, 1.6), 0, Math.PI * 2);
+    ctx.fillStyle = '#bfe6c9';
     ctx.fill();
 
     // 発射前のロケット(地球表面を自転と共に周回)

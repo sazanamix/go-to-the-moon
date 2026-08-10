@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go to the Moon ― 月への一投</title>
+<meta name="description" content="ボタンを押すタイミングだけでロケットを発射し、月に到達させる物理シミュレーションゲーム。地球の自転・自転、月の楕円軌道、万有引力を実際の値で計算しています。">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="glow"></div>
+
+<header class="top">
+  <div class="title">
+    <span class="tag">sazanamix · orbital toy</span>
+    <h1>Go to the Moon</h1>
+  </div>
+  <button id="infoBtn" class="ghost-btn" aria-label="物理モデルの説明を開く">計算モデルについて</button>
+</header>
+
+<main class="layout">
+  <div class="stage-wrap">
+    <canvas id="stage"></canvas>
+    <div id="hud" class="hud">
+      <div class="hud-row"><span class="k">状態</span><span id="hudStatus" class="v">発射待機中</span></div>
+      <div class="hud-row"><span class="k">経過時間</span><span id="hudTime" class="v">0日 0時間</span></div>
+      <div class="hud-row"><span class="k">対 月 距離</span><span id="hudDist" class="v">–</span></div>
+      <div class="hud-row"><span class="k">速度</span><span id="hudSpeed" class="v">–</span></div>
+      <div class="hud-row"><span class="k">最接近</span><span id="hudClosest" class="v">–</span></div>
+    </div>
+    <div id="banner" class="banner hidden"></div>
+  </div>
+
+  <div class="side">
+    <p class="lead">
+      できることはひとつだけ。<strong>「発射」ボタンを押すタイミング</strong>で、自転する地球の上のロケットが
+      どの方向に射出されるかが決まります。速度は常に一定 ― ハンマー投げで的を狙うように、
+      <strong>角度(＝タイミング)だけ</strong>で月を狙ってください。
+    </p>
+    <button id="launchBtn" class="launch-btn">🚀 発射</button>
+    <button id="retryBtn" class="retry-btn hidden">もう一度</button>
+    <div class="stat-line">試行 <span id="attemptCount">0</span> 回 / 到達 <span id="successCount">0</span> 回</div>
+  </div>
+</main>
+
+<footer>
+  <a href="https://sazanamix.github.io/github-pages/">← さざぶろぐ に戻る</a>
+  <span>© sazanamix</span>
+</footer>
+
+<div id="infoOverlay" class="overlay hidden">
+  <div class="overlay-card">
+    <button id="infoClose" class="ghost-btn close-x" aria-label="閉じる">×</button>
+    <h2>この計算モデルについて</h2>
+    <ul>
+      <li><b>地球の自転</b>: 実際の自転周期(23時間56分)で、発射台(ロケット)が地球の外周を回転します。ボタンを押した瞬間の接線方向にロケットが放たれます。</li>
+      <li><b>地球の公転</b>: 地球は太陽の重力とともに自由落下している慣性系とみなせるため、地球を中心とした座標系では公転の影響は(潮汐力を除き)打ち消され、月までの短時間の飛行にはほぼ影響しません。実際のアポロ計画の遷移軌道計算もこの近似(地球中心慣性系)を用いています。</li>
+      <li><b>ロケットの初速</b>: 地球の自転による接線速度(約465 m/s)+ロケット自身の固定Δv(常に一定)の合成。方向だけがタイミングで変化します。</li>
+      <li><b>月の軌道</b>: 離心率0.0549の楕円軌道。ケプラー方程式を数値的に解いて、実際の公転周期(27.32日)どおりに位置を計算しています。円軌道ではありません。</li>
+      <li><b>重力</b>: 発射後のロケットには地球・月それぞれの重力(実際の重力パラメータGM)が働き、RK4法で数値積分しています。月に近づけば月の重力に引かれる「重力捕獲」も再現されます。</li>
+      <li><b>簡略化した点</b>: 月の軌道傾斜(黄道に対して約5.1°)や地球の地軸傾斜、太陽・他惑星の重力は無視し、平面(2D)の地球-月系のみを扱っています。「月に到達」の判定は月の物理的な表面ではなく、月の重力圏に十分入った半径(約1万km)としています。</li>
+      <li><b>時間の進み方</b>: そのままでは月まで数日かかるため、シミュレーション内時間を約9000倍速で進めています(比率はすべての天体・軌道で共通なので、周期の比率自体は実際の値を保っています)。</li>
+    </ul>
+  </div>
+</div>
+
+<script src="./game.js"></script>
+</body>
+</html>

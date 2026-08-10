@@ -423,6 +423,8 @@
       // 到達成功後は宇宙空間に静止させず、月に対する相対位置を固定して月と一緒に動かす
       const moonAtFinish = moonPosition(tAtFinish);
       state.dockOffset = { x: r.x - moonAtFinish.x, y: r.y - moonAtFinish.y };
+      // ロケットは月と一緒に移動するため、その場に残る飛行軌跡は表示しない
+      state.trail = [];
     } else {
       state.dockOffset = null;
     }
@@ -491,8 +493,10 @@
           break;
         }
       }
-      state.trail.push({ x: state.rocket.x, y: state.rocket.y });
-      if (state.trail.length > TRAIL_MAX) state.trail.shift();
+      if (!state.finished) {
+        state.trail.push({ x: state.rocket.x, y: state.rocket.y });
+        if (state.trail.length > TRAIL_MAX) state.trail.shift();
+      }
     }
 
     draw();

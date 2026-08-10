@@ -106,16 +106,11 @@ canvas#stage{
 }
 
 .hud{
-  position:absolute;
-  top:12px;
-  left:12px;
-  background:rgba(11,12,14,.72);
+  background:var(--bg-soft);
   border:1px solid var(--border);
   border-radius:10px;
   padding:10px 12px;
   font:400 11.5px/1.9 'JetBrains Mono',monospace;
-  min-width:190px;
-  backdrop-filter:blur(4px);
 }
 .hud-row{display:flex;justify-content:space-between;gap:14px}
 .hud .k{color:var(--text-dim)}

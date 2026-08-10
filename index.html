@@ -22,6 +22,10 @@
 <main class="layout">
   <div class="stage-wrap">
     <canvas id="stage"></canvas>
+    <div id="banner" class="banner hidden"></div>
+  </div>
+
+  <div class="side">
     <div id="hud" class="hud">
       <div class="hud-row"><span class="k">状態</span><span id="hudStatus" class="v">発射待機中</span></div>
       <div class="hud-row"><span class="k">経過時間</span><span id="hudTime" class="v">0日 0時間</span></div>
@@ -29,10 +33,6 @@
       <div class="hud-row"><span class="k">速度</span><span id="hudSpeed" class="v">–</span></div>
       <div class="hud-row"><span class="k">最接近</span><span id="hudClosest" class="v">–</span></div>
     </div>
-    <div id="banner" class="banner hidden"></div>
-  </div>
-
-  <div class="side">
     <p class="lead">
       できることはひとつだけ。<strong>「発射」ボタンを押すタイミング</strong>で、自転する地球の上のロケットが
       どの方向に射出されるかが決まります。速度は常に一定 ― ハンマー投げで的を狙うように、

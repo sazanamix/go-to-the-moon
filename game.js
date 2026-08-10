@@ -34,6 +34,7 @@
     finished: false,
     rocket: null,             // {x,y,vx,vy, t0, closest}
     trail: [],
+    dockOffset: null,         // 月到達後、ロケットを月に対して固定するための相対位置 {x,y}
     attempts: 0,
     successes: 0,
     resultMsg: null,
@@ -237,9 +238,12 @@
     ctx.fillStyle = '#9a9a9a';
     ctx.fill();
 
-    // 飛行中のロケット
+    // 飛行中のロケット(到達成功後は月に対する相対位置を保ったまま月と一緒に動く)
     if (state.launched && state.rocket) {
-      const rp = toPx(state.rocket.x, state.rocket.y);
+      const rocketPos = state.dockOffset
+        ? { x: moon.x + state.dockOffset.x, y: moon.y + state.dockOffset.y }
+        : state.rocket;
+      const rp = toPx(rocketPos.x, rocketPos.y);
       ctx.beginPath();
       ctx.arc(rp.x, rp.y, 2.2, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
@@ -416,6 +420,11 @@
       if (rankIdx >= 0) {
         msg += ` (ランキング${rankIdx + 1}位にランクイン！)`;
       }
+      // 到達成功後は宇宙空間に静止させず、月に対する相対位置を固定して月と一緒に動かす
+      const moonAtFinish = moonPosition(tAtFinish);
+      state.dockOffset = { x: r.x - moonAtFinish.x, y: r.y - moonAtFinish.y };
+    } else {
+      state.dockOffset = null;
     }
     showBanner(msg, isFail);
   }
@@ -425,6 +434,7 @@
     state.finished = false;
     state.rocket = null;
     state.trail = [];
+    state.dockOffset = null;
     launchBtn.disabled = false;
     giveUpBtn.classList.add('hidden');
     retryBtn.classList.add('hidden');
